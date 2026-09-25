@@ -1,0 +1,5 @@
+scheme,claim,n_folds,n_test_min,n_test_max,shared_position_rate,neighbour_within_5_rate,same_domain_rate
+random,new substitution at an already-measured position (interpolation),10,811,812,1.0,1.0,1.0
+position_grouped,new substitution at a position with no measurements,10,801,826,0.0,1.0,1.0
+region_blocked,new substitution in a contiguous unmeasured region (~137 aa),10,798,818,0.0,0.06642628996591585,0.8108579232694535
+domain_holdout,new substitution in an entirely unmeasured structural domain,11,103,2437,0.0,0.14439556949473453,0.0

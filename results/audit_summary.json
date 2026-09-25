@@ -1,0 +1,109 @@
+{
+  "metadata_discrepancies": {
+    "selection_type": "metadata says 'Flow cytometry'; the positive-selection assay in the paper is a plate-based ccdB toxin survival selection in E. coli US0 hisB- pyrF-. No flow cytometry is involved in the positive selection.",
+    "DMS_total_number_mutants": "metadata says 8117 and the CSV has 8117 rows; the paper reports 8549 accessible non-synonymous mutations, so ~5% of the library is absent from the ProteinGym table.",
+    "per_variant_reliability": "the paper interprets variants only after a Fisher exact test with Benjamini-Hochberg correction, and aggregates to a per-residue 'mutability score'. ProteinGym supplies the raw unfiltered per-variant log2 fold change, which the authors never claimed was individually reliable."
+  },
+  "table_audit": {
+    "n_rows": 8117,
+    "n_positions": 1368,
+    "seq_len": 1368,
+    "coverage_fraction": 0.31228839642967066,
+    "muts_per_position": {
+      "6": 730,
+      "7": 294,
+      "4": 41,
+      "5": 303
+    },
+    "frac_reachable_one_nt": 1.0,
+    "frac_reachable_if_uniform": 0.41338192098454835,
+    "sequence_check": {
+      "ok": 8117
+    },
+    "bin_is_median_split": true,
+    "binarization_cutoff": -0.2654328586114716,
+    "n_duplicate_variants": 0,
+    "n_stop": 0,
+    "n_synonymous": 0
+  },
+  "score_distribution": {
+    "n": 8117,
+    "mean": -0.2519188062334384,
+    "sd": 0.6159094829043394,
+    "min": -6.4511200069759935,
+    "max": 3.915031153832972,
+    "median": -0.2654328586114716,
+    "skew": -0.4374597661267266,
+    "excess_kurtosis": 10.216399710537061,
+    "q01": -1.8844314429758826,
+    "q99": 1.5442058560299452,
+    "n_unique": 8112,
+    "bin_positive_rate": 0.49993840088702723,
+    "bin_reproduced_by_median_split": true,
+    "metadata_cutoff": -0.2654328586,
+    "comment": "Heavy tails (excess kurtosis 10.2) are expected from a log2 ratio of counts with a +1 pseudocount: low-count variants generate extreme values. Read counts are not supplied, so those variants cannot be identified or down-weighted."
+  },
+  "reliability": {
+    "ms_between": 0.49709385597302325,
+    "ms_within": 0.35549453087984245,
+    "var_between": 0.0238647404170287,
+    "var_within": 0.35549453087984245,
+    "icc_position": 0.06290801944933389,
+    "position_only_pearson_ceiling": 0.25081471138937184,
+    "mean_group_size": 5.933479532163743,
+    "n_positions_used": 1368,
+    "half_half_pearson": 0.164463941469969,
+    "half_half_spearman": 0.1924994315939955,
+    "spearman_brown_full": 0.28247150575114727,
+    "interpretation": "ICC_position = 0.063 means only 6.3% of per-variant score variance is attributable to which residue was mutated. Any feature that is CONSTANT across the ~5.9 substitutions measured at a position - which includes every feature computed from the wild-type structure (relative solvent accessibility, contact number, distance to the catalytic site, pLDDT) and the wild-type ESM embedding - is bounded above by Pearson r = sqrt(ICC) = 0.251 against the per-variant score. This bound is a property of the labels, not of any model."
+  },
+  "loo_position_mean": {
+    "pearson": 0.12978076149004686,
+    "spearman": 0.16232770631323684,
+    "comment": "Honest (leave-one-out) predictiveness of the positional effect. The in-sample R^2 of position group means is 0.22, but that is 1368 groups fitted on 5.9 points each; the leave-one-out value is the real number."
+  },
+  "position_mean_autocorrelation": {
+    "lag_1": 0.14144889279458558,
+    "lag_2": 0.10679709488268908,
+    "lag_3": 0.1498311639940925,
+    "lag_5": 0.1270704742851102,
+    "lag_10": 0.06479239292270582,
+    "lag_20": 0.06722199072502813,
+    "lag_50": 0.04068715706675982,
+    "lag_100": -0.026740705022780413,
+    "lag_200": -0.07134111537587767,
+    "comment": "Non-zero short-lag autocorrelation means a position-grouped split still leaves a held-out position's sequence neighbours in training. That is why a region-blocked split is also evaluated."
+  },
+  "domain_signal": {
+    "kruskal_H": 233.85242362905382,
+    "kruskal_p": 1.336629501025443e-44,
+    "domain_mean_spread_sd": 0.12334368278331796,
+    "variant_level_sd": 0.6159094829043394,
+    "most_depleted": [
+      "RuvC-I",
+      "RuvC-II",
+      "RuvC-III"
+    ],
+    "most_tolerant": [
+      "TOPO",
+      "WED",
+      "REC2"
+    ],
+    "nuclease_vs_other_mwu_p": 1.247850060060204e-35,
+    "nuclease_mean": -0.3588962201101445,
+    "other_mean": -0.20118905185056882,
+    "comment": "Domain-level differences are highly significant while the domain mean spread (sd across domains) is a fifth of the variant-level sd. The reproducible signal in this assay is coarse and regional, which matches the original paper's own claim ('reveals important functional domains') and its finding that RuvC/HNH are least tolerant and REC2/PI most tolerant."
+  },
+  "label_validity_probes": {
+    "mean_percentile_across_known_catalytic_residues": 0.2727487724176772,
+    "comment": "In a selection where survival requires cleavage, substitutions at the RuvC and HNH catalytic residues should sit at the floor of the score distribution. They sit at the 21st-35th percentile instead. The rank order is right (these residues are below median) but the dynamic range is compressed, so the labels carry ordinal information about tolerance and not a calibrated activity scale. Consistent with the paper, which reported only D10G and a few H840 substitutions as statistically significant."
+  },
+  "simple_biophysics": {
+    "abs_delta_hydropathy_spearman": -0.0628043138657759,
+    "abs_delta_volume_spearman": -0.0695544681727135,
+    "proline_mean": -0.3431409595923607,
+    "non_proline_mean": -0.24651428351062085,
+    "proline_mwu_p": 2.0066811924221887e-05,
+    "comment": "Proline substitutions are significantly more depleted, the expected direction. Effect sizes for the continuous scales are tiny, bounding how much handcrafted biophysics can contribute."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "n_modelled": 1306,
+  "n_reference": 1368,
+  "coverage": 0.9546783625730995,
+  "n_mismatches": 1,
+  "mismatches": [
+    {
+      "pos": 840,
+      "structure": "A",
+      "reference": "H"
+    }
+  ],
+  "n_missing": 62,
+  "missing_runs": [
+    "1-3",
+    "385",
+    "711-718",
+    "766-775",
+    "1013-1029",
+    "1051-1058",
+    "1242-1252",
+    "1365-1368"
+  ]
+}

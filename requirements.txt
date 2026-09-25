@@ -1,0 +1,21 @@
+# Verified working set for this project (Python 3.12.10, Windows 11, 8 CPU threads, no GPU).
+#
+# numpy/pandas/scipy/scikit-learn were already present in the environment at the versions
+# pinned below; torch (CPU wheel), fair-esm and matplotlib were installed during the
+# exercise. Install torch from the CPU index to avoid pulling a CUDA build:
+#
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt
+#
+# Everything except fair-esm/torch is needed for the baselines; --skip-esm in run_all.py
+# drops the torch/fair-esm requirement entirely.
+
+numpy==2.4.2
+pandas==3.0.3
+scipy==1.17.1
+scikit-learn==1.9.0
+matplotlib==3.11.2
+torch==2.14.0          # CPU build; see index-url note above
+fair-esm==2.0.0        # ESM-2 weights are downloaded on first use (650M = 2.5 GB)
+biopython==1.88        # PDB parsing and Shrake-Rupley SASA for exp6 (no DSSP binary needed)
+python-docx==1.2.0     # only for rendering report/report.docx

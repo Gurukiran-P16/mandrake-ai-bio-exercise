@@ -1,0 +1,32 @@
+[
+  {
+    "model": "esm2_t33_650M_UR50D",
+    "tokens_required": 1370,
+    "num_layers": 33,
+    "embed_dim": 1280,
+    "arch_class": "ESM2",
+    "ok": true,
+    "limit": null,
+    "note": "no length ceiling (rotary embeddings)"
+  },
+  {
+    "model": "esm2_t30_150M_UR50D",
+    "tokens_required": 1370,
+    "num_layers": 30,
+    "embed_dim": 640,
+    "arch_class": "ESM2",
+    "ok": true,
+    "limit": null,
+    "note": "no length ceiling (rotary embeddings)"
+  },
+  {
+    "model": "esm1v_t33_650M_UR90S_1",
+    "tokens_required": 1370,
+    "num_layers": 33,
+    "embed_dim": 1280,
+    "arch_class": "ProteinBertModel",
+    "ok": false,
+    "limit": 1024,
+    "note": "ValueError: Sequence length 1370 above maximum  sequence length of 1024"
+  }
+]

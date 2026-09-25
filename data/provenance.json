@@ -1,0 +1,10 @@
+{
+  "retrieved": "2026-09-23",
+  "assignment_revision": 2,
+  "assay_id": "CAS9_STRP1_Spencer_2017_positive",
+  "official_archive": "https://marks.hms.harvard.edu/proteingym/ProteinGym_v1.3/DMS_ProteinGym_substitutions.zip",
+  "metadata_url": "https://raw.githubusercontent.com/OATML-Markslab/ProteinGym/main/reference_files/DMS_substitutions.csv",
+  "paper": "https://www.nature.com/articles/s41598-017-17081-y",
+  "assay_csv_sha256": "e7ecd32e91a43fba00f4dc3524a85907161b27d8d0e22434ea13ec015dcd500a",
+  "data_modification": "Assay CSV unchanged. Reference FASTA derived from upstream target_seq."
+}

@@ -1,0 +1,51 @@
+==============================================================================
+D  can each checkpoint even process a 1368-residue protein?
+==============================================================================
+  esm2_t33_650M_UR50D      1370 tokens  OK  no length ceiling (rotary embeddings)
+  esm2_t30_150M_UR50D      1370 tokens  OK  no length ceiling (rotary embeddings)
+C:\Users\guruk\AppData\Local\Programs\Python\Python312\Lib\site-packages\esm\pretrained.py:215: UserWarning: Regression weights not found, predicting contacts will not produce correct results.
+  warnings.warn(
+  esm1v_t33_650M_UR90S_1   1370 tokens  FAILS  ValueError: Sequence length 1370 above maximum  sequence len
+
+=== feature extraction ===
+  [esm1v_t33_650M_UR90S_1 window 1/5] residues 1-1022  14s
+  [esm1v_t33_650M_UR90S_1 window 2/5] residues 87-1108  26s
+  [esm1v_t33_650M_UR90S_1 window 3/5] residues 174-1195  36s
+  [esm1v_t33_650M_UR90S_1 window 4/5] residues 261-1282  48s
+  [esm1v_t33_650M_UR90S_1 window 5/5] residues 347-1368  59s
+  ESM-1v windowing: 5 windows of 1022, worst position 511 residues from a window centre
+  [esm2_t30_150M_UR50D] wt-marginals + embeddings in 8s
+  [esm2_t30_150M_UR50D] strided masked marginals in 155s
+
+==============================================================================
+A  zero-shot, every model, identical evaluation path
+==============================================================================
+  esm2_650M_wtmarg             rho +0.1790  r +0.1615  AUROC 0.593  P@5% 0.074
+  esm2_650M_maskmarg           rho +0.1804  r +0.1666  AUROC 0.594  P@5% 0.071
+  esm2_150M_wtmarg             rho +0.1497  r +0.1516  AUROC 0.576  P@5% 0.064
+  esm2_150M_maskmarg           rho +0.1536  r +0.1586  AUROC 0.577  P@5% 0.069
+  esm1v_650M_wtmarg_windowed   rho +0.0728  r +0.0916  AUROC 0.535  P@5% 0.062
+
+==============================================================================
+B  redundancy: are these models saying the same thing?
+==============================================================================
+  ESM-2 650M vs esm2_150M_maskmarg           LLR agreement: Spearman +0.706  Pearson +0.775
+  ESM-2 650M vs esm1v_650M_wtmarg_windowed   LLR agreement: Spearman +0.358  Pearson +0.394
+
+  mean LLR of all three models: rho +0.1788  (best single +0.1804)
+  positional entropy agreement (650M vs ESM-1v): Spearman +0.115
+
+==============================================================================
+C  does adding the other two models to the supervised stack buy anything?
+==============================================================================
+  design matrix (8117, 137) -> (8117, 143)
+  --- position_grouped ---
+    ESM-2 650M only        rho +0.2273
+    all three models       rho +0.2301
+    delta +0.0028 [-0.0037,+0.0116] p=0.432
+  --- region_blocked ---
+    ESM-2 650M only        rho +0.1897
+    all three models       rho +0.1878
+    delta -0.0019 [-0.0128,+0.0085] p=0.756
+
+wrote C:\Users\guruk\Downloads\Mandrake_Ai_Bio_research\cas9_activity\results\second_plm.csv
