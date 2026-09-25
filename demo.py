@@ -13,6 +13,7 @@ cached results table unless it says so. Run `python demo.py` for the menu.
     python demo.py artefact                   show the blocked-CV negative bias live
     python demo.py residue --pos 840          everything the data says about one residue
     python demo.py predict --mutant D10A      the model's held-out prediction for a variant
+    python demo.py score --mutant K855A       score ANY substitution, even an unmeasured one
 """
 from __future__ import annotations
 
@@ -284,6 +285,103 @@ def cmd_residue(a) -> None:
             print("  structure (4UN3): no coordinates for this residue (disordered)")
 
 
+def cmd_score(a) -> None:
+    """Score ANY single substitution, including one that was never measured.
+
+    Every other subcommand reads out-of-fold predictions for variants that are in the
+    assay. This one trains on all 8117 measured variants and then scores a mutation the
+    model has never seen, which is the actual use case and the only honest way to answer
+    "what does it predict for X?" when X is not in the file.
+    """
+    import re as _re
+
+    from src.data import AAS, domain_of, one_nt_neighbourhood
+    from src.features import add_esm_features, build_handcrafted
+
+    df, wt, _audit = load_assay()
+    m = _re.match(r"^([A-Za-z])(\d+)([A-Za-z])$", a.mutant.strip())
+    if not m:
+        raise SystemExit(f"could not parse {a.mutant!r}; expected e.g. D10A or K855A")
+    wt_aa, pos, mt_aa = m.group(1).upper(), int(m.group(2)), m.group(3).upper()
+
+    if not 1 <= pos <= len(wt):
+        raise SystemExit(f"position {pos} is outside 1..{len(wt)}")
+    if wt_aa != wt[pos - 1]:
+        hint = (f" Did you mean {wt[pos - 1]}{pos}{mt_aa}?" if mt_aa != wt[pos - 1]
+                else f" (Position {pos} is {wt[pos - 1]}; give the NEW residue last.)")
+        raise SystemExit(f"{a.mutant}: residue {pos} is {wt[pos - 1]}, not {wt_aa}.{hint}")
+    if mt_aa == wt_aa:
+        raise SystemExit(f"{a.mutant} is not a substitution")
+    if mt_aa not in AAS:
+        raise SystemExit(f"{mt_aa} is not one of the 20 standard amino acids")
+
+    name = f"{wt_aa}{pos}{mt_aa}"
+    measured = df[df["mutant"] == name]
+    at_pos = df[df["pos"] == pos]
+    query = {
+        "mutant": name,
+        "mutated_sequence": wt[: pos - 1] + mt_aa + wt[pos:],
+        "DMS_score": np.nan,
+        "DMS_score_bin": 0,
+        "wt_aa": wt_aa,
+        "pos": pos,
+        "mt_aa": mt_aa,
+        "domain": domain_of(pos),
+        "is_nuclease_domain": bool(at_pos["is_nuclease_domain"].iloc[0]),
+        "rel_pos": (pos - 1) / (len(wt) - 1),
+        "reachable_1nt": mt_aa in one_nt_neighbourhood()[wt_aa],
+        "n_measured_at_pos": int(at_pos["n_measured_at_pos"].iloc[0]),
+    }
+
+    # Featurise the assay and the query together so the query goes through an identical
+    # pipeline (same PCA basis, same column order); train on the assay rows only.
+    aug = pd.concat([df, pd.DataFrame([query])], ignore_index=True)
+    X, names, groups = build_handcrafted(aug)
+    from experiments.exp1_protocol_and_baselines import load_esm_blocks
+
+    X, names, groups = add_esm_features(aug, X, names, groups, n_emb_pcs=32,
+                                        **load_esm_blocks())
+    X_train, X_query = X[:-1], X[-1:]
+    y = df["DMS_score"].to_numpy(float)
+
+    print(f"\nSCORING {name}   (domain {query['domain']})")
+    print("=" * 78)
+    if len(measured):
+        print(f"  already in the assay : YES, true score "
+              f"{float(measured['DMS_score'].iloc[0]):+.3f}")
+    else:
+        print("  already in the assay : NO - this substitution was never measured")
+    print(f"  reachable by 1 nt    : "
+          + ("yes" if query["reachable_1nt"]
+             else "NO - error-prone PCR could not have produced it"))
+    print(f"  measured at position : {query['n_measured_at_pos']} of 19 possible")
+
+    mdl = HGB(cols=np.arange(len(names)), name="full").fit(df, X_train, y)
+    pred = float(mdl.predict(pd.DataFrame([query]), X_query)[0])
+    train_pred = mdl.predict(df, X_train)
+    pct = float((train_pred < pred).mean())
+    print(f"\n  trained model (GBM, {len(names)} features, fitted on all {len(df)} variants)")
+    print(f"      predicted DMS score {pred:+.3f}"
+          f"   ->  {pct:.0%} percentile among the measured variants")
+
+    llr_col = next((i for i, n in enumerate(names) if n == "esm_maskmarg_llr"), None)
+    if llr_col is not None:
+        llr = float(X_query[0, llr_col])
+        lpct = float((X_train[:, llr_col] < llr).mean())
+        print("  ESM-2 650M zero-shot (untrained - the component actually recommended)")
+        print(f"      log-likelihood ratio {llr:+.2f} nats"
+              f"   ->  {lpct:.0%} percentile")
+
+    print("\n  Read this as a RANK, not a value. Honest held-out accuracy at unmeasured")
+    print("  positions is Spearman ~0.23, and any position-only feature is capped at 0.25")
+    print("  by the label's own reliability. The percentile means something; the third")
+    print("  decimal of the score does not.")
+    if len(measured):
+        print(f"\n  NOTE: {name} is in the training set, so the number above is fitted, not")
+        print(f"  held out. Use `demo.py predict --mutant {name}` for its honest")
+        print("  out-of-fold prediction.")
+
+
 def cmd_predict(a) -> None:
     f = RESULTS / "heldout_predictions.csv"
     if not f.exists():
@@ -347,6 +445,8 @@ def main() -> None:
     p.add_argument("--pos", type=int, required=True)
     p = sub.add_parser("predict", help="held-out predictions for one variant")
     p.add_argument("--mutant", required=True)
+    p = sub.add_parser("score", help="score ANY substitution, even one never measured")
+    p.add_argument("--mutant", required=True, help="e.g. K855A")
 
     a = ap.parse_args()
     if a.cmd is None:
@@ -354,7 +454,8 @@ def main() -> None:
         return
     {"claims": cmd_claims, "bound": cmd_bound, "leak": cmd_leak, "split": cmd_split,
      "sweep": cmd_sweep, "ablate": cmd_ablate, "artefact": cmd_artefact,
-     "model": cmd_split, "residue": cmd_residue, "predict": cmd_predict}[a.cmd](a)
+     "model": cmd_split, "residue": cmd_residue, "predict": cmd_predict,
+     "score": cmd_score}[a.cmd](a)
 
 
 if __name__ == "__main__":

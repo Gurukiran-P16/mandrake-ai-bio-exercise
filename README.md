@@ -96,6 +96,7 @@ python demo.py artefact        # the blocked-CV bias I caught in my own work
 python demo.py ablate --drop esm_emb --scheme region_blocked
 python demo.py residue --pos 840
 python demo.py predict --mutant D10A
+python demo.py score --mutant K855A   # score ANY substitution, even an unmeasured one
 ```
 
 `bound`, `leak`, `artefact`, `residue` and `predict` need no torch and no ESM cache.
